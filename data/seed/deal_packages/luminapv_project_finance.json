@@ -1,0 +1,118 @@
+{
+  "deal_id": "luminapv-project-finance",
+  "deal_name": "LuminaPV Nevada Module Plant",
+  "deal_type": "project_finance",
+  "borrower": "LuminaPV Manufacturing LLC",
+  "documents": [
+    {
+      "doc_id": "doc-summary",
+      "title": "Executive Project Summary",
+      "document_type": "project_summary",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Overview",
+          "text": "LuminaPV Manufacturing LLC is seeking a $125 million senior debt facility to finance a 3.0 GW domestic solar module manufacturing facility in Nevada. The borrower expects the facility to reach commercial operations in Q4 2027 and has secured a 10-year offtake with SunBright Energy for 82% of planned output."
+        },
+        {
+          "page": 2,
+          "section": "Key Risks",
+          "text": "Key risks include construction execution, delayed interconnection approvals for a backup export line, and commodity input volatility. Management states that the primary facility does not require a new executed interconnection agreement for initial operations, but the backup export line remains pending utility approval."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-epc",
+      "title": "EPC Agreement Extract",
+      "document_type": "epc_agreement",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Article 3 - Scope",
+          "text": "The EPC contractor will deliver a turnkey module assembly facility with nameplate annual throughput of 3.0 GW. Mechanical completion is targeted for July 31, 2027."
+        },
+        {
+          "page": 2,
+          "section": "Schedule 4 - Milestones",
+          "text": "Target commercial operation date is September 30, 2027. Delay liquidated damages apply if commercial operation is not achieved by October 31, 2027."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-model",
+      "title": "Base Case Financial Model Summary",
+      "document_type": "financial_model",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Coverage Ratios",
+          "text": "Base case minimum DSCR is 1.42x in Q1 2028. Downside minimum DSCR is 1.18x in Q2 2028. The lender case assumes a debt service reserve account sized at six months of scheduled principal and interest."
+        },
+        {
+          "page": 2,
+          "section": "Profitability",
+          "text": "The project reaches positive net income in Year 2 following commercial operations. EBITDA turns positive in Q2 2028 once contracted throughput exceeds 68% utilization."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-covenants",
+      "title": "Indicative Term Sheet and Covenants",
+      "document_type": "debt_covenant",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Financial Covenants",
+          "text": "The borrower shall maintain a minimum quarterly DSCR of 1.20x once the facility reaches commercial operation. Additional indebtedness is prohibited without lender consent, except for purchase-money obligations under $3 million."
+        },
+        {
+          "page": 2,
+          "section": "Conditions Precedent",
+          "text": "Prior to initial funding, the borrower must deliver executed material project documents, evidence of offtake effectiveness, and evidence that all material permits have been obtained. The interconnection agreement for the backup export line may be delivered after closing subject to a post-closing covenant."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-offtake",
+      "title": "SunBright Offtake Agreement Summary",
+      "document_type": "offtake_agreement",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Commercial Terms",
+          "text": "SunBright Energy has entered a 10-year offtake agreement covering 82% of annual production subject to price collar adjustments. SunBright carries an internal BBB- equivalent credit assessment from the sponsor's rating framework."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-ddr",
+      "title": "Lender Diligence Tracker",
+      "document_type": "diligence_tracker",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Open Items",
+          "text": "Open diligence items include utility confirmation for the backup export line, final independent engineer report, commodity hedging policy, and cybersecurity controls review. No executed backup export interconnection agreement was present in the data room as of March 15, 2026."
+        }
+      ]
+    }
+  ],
+  "research_citations": [
+    {
+      "citation_id": "research-01",
+      "title": "U.S. Solar Module Manufacturing Yield Trends",
+      "source": "pv-magazine.com",
+      "url": "https://example.com/pv-magazine-yield-trends",
+      "snippet": "Recent domestic facilities have seen yield volatility during ramp-up, making first-year throughput assumptions sensitive to supplier quality and commissioning discipline.",
+      "risk_tags": ["construction_execution", "throughput_ramp"]
+    },
+    {
+      "citation_id": "research-02",
+      "title": "Battery and Solar Factory Construction Delay Benchmarks",
+      "source": "bnef.com",
+      "url": "https://example.com/bnef-delay-benchmarks",
+      "snippet": "Greenfield clean manufacturing projects frequently face 60-120 day commissioning delays if utility upgrades or equipment acceptance testing slip.",
+      "risk_tags": ["schedule_delay", "utility_dependency"]
+    }
+  ]
+}

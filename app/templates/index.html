@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Project Aegis</title>
+    <style>
+      body { font-family: Georgia, serif; margin: 2rem auto; max-width: 900px; color: #1f2937; }
+      .card { border: 1px solid #d1d5db; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+      a { color: #0f766e; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <h1>Project Aegis</h1>
+    <p>Reliability platform for climate project finance diligence.</p>
+    <div class="card">
+      <h2>Deals</h2>
+      {% if deal_ids %}
+        <ul>
+          {% for deal_id in deal_ids %}
+            <li><a href="/deal/{{ deal_id }}">{{ deal_id }}</a></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No deals have been ingested yet. Use the API to ingest and run the seed package.</p>
+      {% endif %}
+    </div>
+  </body>
+</html>

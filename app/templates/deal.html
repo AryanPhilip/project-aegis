@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ result.deal_id }}</title>
+    <style>
+      body { font-family: Georgia, serif; margin: 2rem auto; max-width: 1100px; color: #111827; }
+      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+      .card { border: 1px solid #d1d5db; border-radius: 14px; padding: 1rem 1.25rem; }
+      .pill { display: inline-block; border-radius: 999px; padding: 0.15rem 0.6rem; background: #ecfeff; color: #155e75; font-size: 0.85rem; }
+      li { margin-bottom: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <h1>{{ result.deal_id }}</h1>
+    <nav class="card" style="margin-bottom: 1rem;">
+      <strong>Workspace</strong>
+      <div style="margin-top: 0.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="#files">Files</a>
+        <a href="#schema">Schema</a>
+        <a href="#ask">Ask</a>
+        <a href="#ddqs">DDQs</a>
+        <a href="#memo">Memo</a>
+        <a href="#research">Research</a>
+        <a href="#evals">Evals</a>
+      </div>
+    </nav>
+    <div class="grid">
+      <section class="card" id="files">
+        <h2>Files</h2>
+        <ul>
+          {% for claim in result.memo_claims %}
+            {% for evidence in claim.evidence_spans %}
+              <li>{{ evidence.doc_title }} — page {{ evidence.page }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+      </section>
+      <section class="card" id="schema">
+        <h2>Schema</h2>
+        <ul>
+          {% for key, field in result.schema.items() %}
+            <li>
+              <strong>{{ field.label }}</strong>
+              <span class="pill">{{ field.verification_label }}</span><br />
+              {{ field.value }}
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+      <section class="card" id="ask">
+        <h2>Ask</h2>
+        <p>Use the API `POST /deal/&lt;id&gt;/ask` to ask grounded diligence questions. Suggested prompts:</p>
+        <ul>
+          <li>Has the interconnection agreement been executed?</li>
+          <li>What is the minimum modeled DSCR and what supports it?</li>
+          <li>Is there a schedule inconsistency between the summary and EPC milestones?</li>
+        </ul>
+      </section>
+      <section class="card" id="memo">
+        <h2>Memo</h2>
+        <ul>
+          {% for claim in result.memo_claims %}
+            <li>{{ claim.sentence }} <span class="pill">{{ claim.verification_label }}</span></li>
+          {% endfor %}
+        </ul>
+      </section>
+      <section class="card" id="ddqs">
+        <h2>DDQs</h2>
+        <ul>
+          {% for item in result.ddqs %}
+            <li>{{ item.question }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+      <section class="card" id="research">
+        <h2>Research</h2>
+        <ul>
+          {% for item in result.research_links %}
+            <li>{{ item.citation.title }} <span class="pill">{{ item.linked_risk }}</span></li>
+          {% endfor %}
+        </ul>
+      </section>
+      <section class="card" id="evals">
+        <h2>Eval Summary</h2>
+        <ul>
+          <li>Recall@3: {{ result.evals.summary.retrieval_recall_at_3 }}</li>
+          <li>Support macro F1: {{ result.evals.summary.support_macro_f1 }}</li>
+          <li>Unsupported claim rate: {{ result.evals.summary.unsupported_claim_rate }}</li>
+          <li>Abstention AUC: {{ result.evals.summary.abstention_auc }}</li>
+        </ul>
+      </section>
+    </div>
+  </body>
+</html>

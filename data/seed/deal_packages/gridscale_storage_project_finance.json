@@ -1,0 +1,83 @@
+{
+  "deal_id": "gridscale-storage-project-finance",
+  "deal_name": "GridScale Arizona Battery Project",
+  "deal_type": "project_finance",
+  "borrower": "GridScale Storage Holdings LLC",
+  "documents": [
+    {
+      "doc_id": "doc-summary",
+      "title": "Battery Storage Project Summary",
+      "document_type": "project_summary",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Overview",
+          "text": "GridScale Storage Holdings LLC is seeking a $210 million senior secured debt facility to finance a 180 MW / 720 MWh battery storage project in Arizona. Commercial operation is targeted for June 30, 2028 and the borrower has signed a 15-year tolling agreement with Desert Peak Utilities for 100% of project capacity."
+        },
+        {
+          "page": 2,
+          "section": "Permitting and Utility",
+          "text": "All major permits have been obtained and the executed interconnection agreement with APS was delivered in the data room. Remaining diligence focuses on augmentation strategy, warranty degradation curves, and tax equity timing."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-model",
+      "title": "Storage Financial Model Summary",
+      "document_type": "financial_model",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Coverage Ratios",
+          "text": "Base case minimum DSCR is 1.36x in 2029. Lender downside minimum DSCR is 1.21x. The debt service reserve account is funded to six months of scheduled debt service at closing."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-covenants",
+      "title": "Debt Term Sheet",
+      "document_type": "debt_covenant",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Financial Covenants",
+          "text": "The borrower shall maintain a minimum annual DSCR of 1.15x following commercial operation. Additional indebtedness is restricted other than permitted equipment replacement lines under $5 million."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-tolling",
+      "title": "Tolling Agreement Summary",
+      "document_type": "offtake_agreement",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Commercial Terms",
+          "text": "Desert Peak Utilities has signed a 15-year tolling agreement covering 100% of contracted storage capacity. The offtaker is investment grade and provides availability-based revenue with inflation-linked escalators."
+        }
+      ]
+    },
+    {
+      "doc_id": "doc-interconnection",
+      "title": "Executed Interconnection Agreement Summary",
+      "document_type": "interconnection_agreement",
+      "pages": [
+        {
+          "page": 1,
+          "section": "Status",
+          "text": "The interconnection agreement between GridScale Storage Holdings LLC and Arizona Public Service was executed on February 14, 2026. All major utility milestone deposits have been funded."
+        }
+      ]
+    }
+  ],
+  "research_citations": [
+    {
+      "citation_id": "research-10",
+      "title": "Battery Augmentation Cost Curves",
+      "source": "bnef.com",
+      "url": "https://example.com/bnef-battery-augmentation",
+      "snippet": "Augmentation reserves can materially alter later-year coverage if warranty and degradation assumptions are not aligned with dispatch strategy.",
+      "risk_tags": ["augmentation", "degradation"]
+    }
+  ]
+}
