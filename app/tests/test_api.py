@@ -108,6 +108,20 @@ def test_deal_dashboard_renders_workspace_sections_and_context_rail():
     assert "Evals" in response.text
 
 
+def test_deal_dashboard_exposes_ask_and_review_hooks():
+    app = create_app()
+    client = TestClient(app)
+
+    deal_id = client.post("/ingest/deal-package").json()["deal_id"]
+    client.post("/run/pipeline", params={"deal_id": deal_id})
+    response = client.get(f"/deal/{deal_id}")
+
+    assert 'data-ask-form' in response.text
+    assert 'data-review-control' in response.text
+    assert 'data-artifact-id' in response.text
+    assert 'data-evidence-panel' in response.text
+
+
 def test_api_can_ingest_named_seed_cases():
     app = create_app()
     client = TestClient(app)

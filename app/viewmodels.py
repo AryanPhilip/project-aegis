@@ -218,5 +218,19 @@ def build_deal_workspace_view(
             "unsupported_claim_rate": result.evals.summary.unsupported_claim_rate,
             "abstention_auc": result.evals.summary.abstention_auc,
         },
-        "artifact_evidence": artifact_evidence,
+        "artifact_evidence": {
+            artifact_id: [
+                {
+                    "chunk_id": evidence.chunk_id,
+                    "doc_id": evidence.doc_id,
+                    "doc_title": evidence.doc_title,
+                    "page": evidence.page,
+                    "section": evidence.section,
+                    "text": evidence.text,
+                    "score": evidence.score,
+                }
+                for evidence in evidence_list
+            ]
+            for artifact_id, evidence_list in artifact_evidence.items()
+        },
     }

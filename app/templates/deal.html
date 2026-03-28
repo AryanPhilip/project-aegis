@@ -44,15 +44,28 @@
           {% for section in workspace.schema_sections %}
             <div class="inline-grid">
               {% for field in section.fields %}
-                <article class="artifact-item">
+                <article class="artifact-item" data-artifact-id="{{ field.field_id }}">
                   <div class="artifact-topline">
                     <div>
                       <p class="metric-label">{{ field.label }}</p>
-                      <p class="artifact-value">{{ field.value }}</p>
+                      <button class="artifact-button" type="button">
+                        <span class="artifact-value">{{ field.value }}</span>
+                      </button>
                     </div>
                     <div class="artifact-meta">
                       <span class="pill pill--{{ field.verification_label }}">{{ field.verification_label }}</span>
                       <span class="pill pill--{{ field.support_label }}">{{ field.support_label }}</span>
+                      <select
+                        class="review-select"
+                        data-review-control
+                        data-deal-id="{{ workspace.deal_id }}"
+                        data-artifact-type="field"
+                        data-artifact-id="{{ field.field_id }}"
+                      >
+                        <option value="verified" {% if field.verification_label == "verified" %}selected{% endif %}>verified</option>
+                        <option value="unsure" {% if field.verification_label == "unsure" %}selected{% endif %}>unsure</option>
+                        <option value="missing" {% if field.verification_label == "missing" %}selected{% endif %}>missing</option>
+                      </select>
                     </div>
                   </div>
                   <p class="artifact-reasoning">{{ field.reasoning }}</p>
@@ -79,12 +92,25 @@
           </div>
           <div class="inline-grid">
             {% for claim in workspace.memo_claims %}
-              <article class="artifact-item">
+              <article class="artifact-item" data-artifact-id="{{ claim.claim_id }}">
                 <div class="artifact-topline">
-                  <p class="artifact-sentence">{{ claim.sentence }}</p>
+                  <button class="artifact-button" type="button">
+                    <span class="artifact-sentence">{{ claim.sentence }}</span>
+                  </button>
                   <div class="artifact-meta">
                     <span class="pill pill--{{ claim.verification_label }}">{{ claim.verification_label }}</span>
                     <span class="pill pill--{{ claim.support_label }}">{{ claim.support_label }}</span>
+                    <select
+                      class="review-select"
+                      data-review-control
+                      data-deal-id="{{ workspace.deal_id }}"
+                      data-artifact-type="memo"
+                      data-artifact-id="{{ claim.claim_id }}"
+                    >
+                      <option value="verified" {% if claim.verification_label == "verified" %}selected{% endif %}>verified</option>
+                      <option value="unsure" {% if claim.verification_label == "unsure" %}selected{% endif %}>unsure</option>
+                      <option value="missing" {% if claim.verification_label == "missing" %}selected{% endif %}>missing</option>
+                    </select>
                   </div>
                 </div>
                 <p class="muted">{{ claim.evidence_count }} evidence references · {{ claim.claim_type }}</p>
@@ -102,14 +128,27 @@
           </div>
           <div class="inline-grid">
             {% for item in workspace.ddqs %}
-              <article class="artifact-item">
+              <article class="artifact-item" data-artifact-id="{{ item.ddq_id }}">
                 <div class="artifact-topline">
                   <div>
-                    <p class="artifact-question">{{ item.question }}</p>
+                    <button class="artifact-button" type="button">
+                      <span class="artifact-question">{{ item.question }}</span>
+                    </button>
                     <p class="muted">{{ item.tag }} · Priority {{ item.priority }}</p>
                   </div>
                   <div class="artifact-meta">
                     <span class="pill pill--{{ item.verification_label }}">{{ item.verification_label }}</span>
+                    <select
+                      class="review-select"
+                      data-review-control
+                      data-deal-id="{{ workspace.deal_id }}"
+                      data-artifact-type="ddq"
+                      data-artifact-id="{{ item.ddq_id }}"
+                    >
+                      <option value="verified" {% if item.verification_label == "verified" %}selected{% endif %}>verified</option>
+                      <option value="unsure" {% if item.verification_label == "unsure" %}selected{% endif %}>unsure</option>
+                      <option value="missing" {% if item.verification_label == "missing" %}selected{% endif %}>missing</option>
+                    </select>
                   </div>
                 </div>
                 <p class="artifact-reasoning">{{ item.rationale }}</p>
@@ -126,8 +165,18 @@
               <p class="section-note">Grounded queries should resolve to evidence-backed answers or abstain cleanly.</p>
             </div>
           </div>
-          <div class="ask-result">
-            <p class="muted">Interactive ask controls land in the next step. For now, use the API endpoint to query this deal.</p>
+          <form class="ask-form" action="/deal/{{ workspace.deal_id }}/ask" method="post" data-ask-form>
+            <input
+              class="ask-input"
+              type="text"
+              name="question"
+              value="Has the interconnection agreement been executed?"
+              aria-label="Grounded diligence question"
+            />
+            <button class="button" type="submit">Run grounded query</button>
+          </form>
+          <div class="ask-result" data-ask-result data-state="idle">
+            <p class="muted">Select a field, claim, or DDQ to inspect evidence, or submit a grounded question here.</p>
           </div>
         </section>
       </main>
@@ -136,7 +185,7 @@
         <section class="rail-panel">
           <h2 class="rail-title">Evidence</h2>
           <p class="rail-copy">Artifact-linked evidence will render here as analysts move through the workspace.</p>
-          <ul class="evidence-list">
+          <ul class="evidence-list" data-evidence-panel>
             {% for evidence in workspace.artifact_evidence.get("memo-001", []) %}
               <li class="evidence-item">
                 <strong>{{ evidence.doc_title }}</strong><br />
@@ -198,4 +247,9 @@
       </aside>
     </div>
   </section>
+{% endblock %}
+
+{% block scripts %}
+  <script id="artifact-evidence-data" type="application/json">{{ workspace.artifact_evidence | tojson }}</script>
+  <script src="/static/app.js" defer></script>
 {% endblock %}
