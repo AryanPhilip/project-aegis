@@ -5,6 +5,7 @@ from typing import Dict, Literal, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from starlette.requests import Request
@@ -12,6 +13,7 @@ from starlette.requests import Request
 from benchmark.seed import load_seed_deal_package
 from benchmark.schemas import DealPackage, PipelineResult
 from models.pipeline import AegisPipeline
+from app.viewmodels import build_portfolio_view
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SEED_PATH = BASE_DIR / "data" / "seed" / "deal_packages" / "luminapv_project_finance.json"
@@ -58,14 +60,15 @@ def create_app(seed_path: Optional[Path] = None) -> FastAPI:
     repo = DealRepository(pipeline)
     templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent / "templates"))
     app = FastAPI(title="Project Aegis")
+    app.mount("/static", StaticFiles(directory=str(Path(__file__).resolve().parent / "static")), name="static")
 
     @app.get("/", response_class=HTMLResponse)
     def home(request: Request):
-        deal_ids = sorted(repo.results) or sorted(repo.deals)
+        portfolio = build_portfolio_view(repo.deals.values(), repo.results)
         return templates.TemplateResponse(
             request,
             "index.html",
-            {"request": request, "deal_ids": deal_ids},
+            {"request": request, "portfolio": portfolio},
         )
 
     @app.get("/deal/{deal_id}", response_class=HTMLResponse)
@@ -125,6 +128,18 @@ def create_app(seed_path: Optional[Path] = None) -> FastAPI:
         result = _load_result(repo, deal_id)
         if request.artifact_type == "field":
             artifact = result.schema[request.artifact_id]
+            artifact.verification_label = request.verification_label  # type: ignore[assignment]
+            return artifact.model_dump()
+        if request.artifact_type == "memo":
+            artifact = next((claim for claim in result.memo_claims if claim.claim_id == request.artifact_id), None)
+            if artifact is None:
+                raise HTTPException(status_code=404, detail="Memo claim not found")
+            artifact.verification_label = request.verification_label  # type: ignore[assignment]
+            return artifact.model_dump()
+        if request.artifact_type == "ddq":
+            artifact = next((item for item in result.ddqs if item.ddq_id == request.artifact_id), None)
+            if artifact is None:
+                raise HTTPException(status_code=404, detail="DDQ item not found")
             artifact.verification_label = request.verification_label  # type: ignore[assignment]
             return artifact.model_dump()
         raise HTTPException(status_code=400, detail="Unsupported artifact type")

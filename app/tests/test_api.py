@@ -5,6 +5,20 @@ from fastapi.testclient import TestClient
 from app.main import create_app
 
 
+def test_home_page_renders_command_center_for_loaded_deals():
+    app = create_app()
+    client = TestClient(app)
+
+    client.post("/ingest/deal-package")
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "Portfolio Command Center" in response.text
+    assert "Verification coverage" in response.text
+    assert "Open diligence gaps" in response.text
+    assert "Trust signal" in response.text
+
+
 def test_api_supports_ingest_pipeline_review_and_leaderboard():
     app = create_app(seed_path=Path("data/seed/deal_packages/luminapv_project_finance.json"))
     client = TestClient(app)
@@ -42,6 +56,20 @@ def test_api_supports_ingest_pipeline_review_and_leaderboard():
     )
     assert review_response.status_code == 200
     assert review_response.json()["verification_label"] == "verified"
+
+    memo_review = client.post(
+        f"/deal/{deal_id}/review",
+        json={"artifact_type": "memo", "artifact_id": "memo-003", "verification_label": "verified"},
+    )
+    assert memo_review.status_code == 200
+    assert memo_review.json()["verification_label"] == "verified"
+
+    ddq_review = client.post(
+        f"/deal/{deal_id}/review",
+        json={"artifact_type": "ddq", "artifact_id": "ddq-001", "verification_label": "unsure"},
+    )
+    assert ddq_review.status_code == 200
+    assert ddq_review.json()["verification_label"] == "unsure"
 
     evals_response = client.get(f"/deal/{deal_id}/evals")
     assert evals_response.status_code == 200

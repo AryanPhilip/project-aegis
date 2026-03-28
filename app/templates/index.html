@@ -1,29 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Project Aegis</title>
-    <style>
-      body { font-family: Georgia, serif; margin: 2rem auto; max-width: 900px; color: #1f2937; }
-      .card { border: 1px solid #d1d5db; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
-      a { color: #0f766e; text-decoration: none; }
-    </style>
-  </head>
-  <body>
-    <h1>Project Aegis</h1>
-    <p>Reliability platform for climate project finance diligence.</p>
-    <div class="card">
-      <h2>Deals</h2>
-      {% if deal_ids %}
-        <ul>
-          {% for deal_id in deal_ids %}
-            <li><a href="/deal/{{ deal_id }}">{{ deal_id }}</a></li>
-          {% endfor %}
-        </ul>
-      {% else %}
-        <p>No deals have been ingested yet. Use the API to ingest and run the seed package.</p>
-      {% endif %}
+{% extends "base.html" %}
+
+{% block title %}Portfolio Command Center | Project Aegis{% endblock %}
+
+{% block content %}
+  <section class="hero-panel">
+    <div class="header-row">
+      <div>
+        <span class="eyebrow">Project Aegis · Portfolio Command Center</span>
+        <h1 class="hero-title">Evidence-grounded diligence for climate project finance.</h1>
+        <p class="hero-copy">
+          Aegis turns seeded deal-room outputs into a portfolio operating surface with visible trust states,
+          diligence gaps, and reviewer-visible provenance. The command center is intentionally restrained:
+          analysts should see blocked issues before they see model bravado.
+        </p>
+      </div>
+      <div class="status-strip">
+        <article class="status-card">
+          <p class="status-card-label">Deployment posture</p>
+          <p class="status-card-value">Institutional demo</p>
+        </article>
+        <article class="status-card">
+          <p class="status-card-label">Coverage model</p>
+          <p class="status-card-value">Evidence first</p>
+        </article>
+        <article class="status-card">
+          <p class="status-card-label">Default action</p>
+          <p class="status-card-value">Review blocked deals</p>
+        </article>
+        <article class="status-card">
+          <p class="status-card-label">Failure policy</p>
+          <p class="status-card-value">Fail closed</p>
+        </article>
+      </div>
     </div>
-  </body>
-</html>
+
+    <div class="kpi-grid">
+      <article class="metric-card">
+        <p class="metric-label">Active deals</p>
+        <p class="metric-value">{{ portfolio.summary.active_deals }}</p>
+        <p class="metric-caption">Loaded into the command center.</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">Verification coverage</p>
+        <p class="metric-value">{{ "%.0f"|format(portfolio.summary.verification_coverage * 100) }}%</p>
+        <p class="metric-caption">Across completed pipeline runs.</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">Open diligence gaps</p>
+        <p class="metric-value">{{ portfolio.summary.open_diligence_gaps }}</p>
+        <p class="metric-caption">Active DDQs requiring analyst follow-up.</p>
+      </article>
+      <article class="metric-card">
+        <p class="metric-label">Contradiction recall</p>
+        <p class="metric-value">{{ "%.0f"|format(portfolio.summary.contradiction_recall * 100) }}%</p>
+        <p class="metric-caption">Current benchmark recall at surfaced contradictions.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="dashboard-grid">
+    <div class="table-shell">
+      <div class="table-head">
+        <div>
+          <h2 class="table-title">Portfolio roster</h2>
+          <p class="table-note">Each row exposes the current trust signal, diligence state, and readiness to advance.</p>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Deal</th>
+            <th scope="col">Asset type</th>
+            <th scope="col">Stage</th>
+            <th scope="col">Verification coverage</th>
+            <th scope="col">Open DDQs</th>
+            <th scope="col">Risk state</th>
+            <th scope="col">Trust signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if portfolio.rows %}
+            {% for row in portfolio.rows %}
+              <tr>
+                <td>
+                  {% if row.trust_signal == "Pending" %}
+                    <div class="deal-link">
+                      <span class="deal-name">{{ row.deal_name }}</span>
+                      <span class="deal-meta">{{ row.deal_id }}</span>
+                    </div>
+                  {% else %}
+                    <a class="deal-link" href="/deal/{{ row.deal_id }}">
+                      <span class="deal-name">{{ row.deal_name }}</span>
+                      <span class="deal-meta">{{ row.deal_id }}</span>
+                    </a>
+                  {% endif %}
+                </td>
+                <td>{{ row.deal_type }}</td>
+                <td>{{ row.stage }}</td>
+                <td>{{ "%.0f"|format(row.verification_coverage * 100) }}%</td>
+                <td>{{ row.open_ddqs }}</td>
+                <td>{{ row.risk_state }}</td>
+                <td><span class="pill pill--{{ row.trust_signal|lower }}">{{ row.trust_signal }}</span></td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7">No deals have been ingested yet. Use the ingestion endpoint to load a seed package into the command center.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <aside class="rail-stack">
+      <section class="rail-panel">
+        <h2 class="rail-title">Reliability rail</h2>
+        <p class="rail-copy">Model health stays visible at the portfolio layer so blocked outputs are obvious before a deal is opened.</p>
+        <ul class="rail-list">
+          <li>
+            <strong>Abstention AUC</strong><br />
+            <span class="muted">{{ portfolio.reliability.abstention_auc }}</span>
+          </li>
+          <li>
+            <strong>Reviewer precision</strong><br />
+            <span class="muted">{{ portfolio.reliability.reviewer_precision }}</span>
+          </li>
+          <li>
+            <strong>Trust signal</strong><br />
+            <span class="muted">Rows marked <em>Blocked</em> or <em>Review</em> should be triaged first.</span>
+          </li>
+        </ul>
+      </section>
+      <section class="rail-panel">
+        <h2 class="rail-title">Failure buckets</h2>
+        {% if portfolio.reliability.failure_buckets %}
+          <ul class="rail-list">
+            {% for bucket in portfolio.reliability.failure_buckets %}
+              <li>
+                <strong>{{ bucket.bucket }}</strong><br />
+                <span class="muted">{{ bucket.count }} flagged examples</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No completed runs yet. Once pipelines execute, failure buckets will surface here.</p>
+        {% endif %}
+      </section>
+    </aside>
+  </section>
+{% endblock %}
