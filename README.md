@@ -21,6 +21,23 @@ Project Aegis is a local, end-to-end prototype of an evidence-first reliability 
 - Run a benchmark over retrieval, support classification, evidence quality, abstention behavior, and reviewer precision
 - Train a small demonstration support classifier and reranker that outperform naive baselines on the bundled corpus
 
+## Frontend Surface
+
+The frontend is intentionally server-rendered and uses FastAPI, Jinja, and small amounts of vanilla JavaScript rather than a SPA framework. It now has two primary screens:
+
+- `Portfolio Command Center` at `/`
+  - active deals
+  - verification coverage
+  - open diligence gaps
+  - contradiction recall
+  - per-deal trust signals (`High`, `Review`, `Blocked`, `Pending`)
+- `Deal Workspace` at `/deal/{deal_id}`
+  - schema, memo, DDQs, and ask flow in the main pane
+  - evidence, files, research, and evals in the context rail
+  - inline reviewer controls for `verified`, `unsure`, and `missing`
+
+The browser layer is progressive rather than stateful. The HTML remains usable without JavaScript, while `app/static/app.js` enhances the page with grounded ask requests, review mutations, and evidence-panel selection.
+
 ## Verification Labels
 
 - `verified`: grounded and internally consistent
@@ -67,6 +84,15 @@ Start the web app:
 ```
 
 Then open [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+To verify the frontend manually:
+
+1. `POST /ingest/deal-package`
+2. `POST /run/pipeline?deal_id=luminapv-project-finance`
+3. Reload `/` and confirm the portfolio row shows a blocked trust state
+4. Open `/deal/luminapv-project-finance`
+5. Click a field, memo claim, or DDQ and confirm the evidence rail updates
+6. Submit the default ask prompt and confirm the UI shows an abstention outcome for missing interconnection evidence
 
 ## API Surface
 
