@@ -27,6 +27,19 @@ def _tokenize(text: str) -> List[str]:
     return re.findall(r"[a-z0-9]+", text.lower())
 
 
+MONTH_PATTERN = r"(January|February|March|April|May|June|July|August|September|October|November|December)"
+FULL_DATE_PATTERN = rf"{MONTH_PATTERN} \d{{1,2}}, \d{{4}}"
+MONTH_YEAR_PATTERN = rf"{MONTH_PATTERN} \d{{4}}"
+QUARTER_PATTERN = r"Q[1-4] \d{4}"
+SCHEDULE_SIGNAL_PATTERN = rf"(?P<signal>{FULL_DATE_PATTERN}|{MONTH_YEAR_PATTERN}|{QUARTER_PATTERN})"
+SCHEDULE_CONTEXT_PATTERNS = (
+    rf"target commercial operations? date is {SCHEDULE_SIGNAL_PATTERN}",
+    rf"commercial operations? (?:is )?(?:targeted|scheduled|planned) (?:for|on) {SCHEDULE_SIGNAL_PATTERN}",
+    rf"reach commercial operations? in {SCHEDULE_SIGNAL_PATTERN}",
+    rf"commercial operations? in {SCHEDULE_SIGNAL_PATTERN}",
+)
+
+
 def _score(query: str, candidate: str) -> float:
     q = set(_tokenize(query))
     c = set(_tokenize(candidate))
@@ -93,12 +106,19 @@ class AegisPipeline:
         match = re.search(r"(\d+)-year", text)
         return match.group(1) if match else None
 
+    def _extract_schedule_signal(self, text: str) -> str | None:
+        for pattern in SCHEDULE_CONTEXT_PATTERNS:
+            match = re.search(pattern, text, flags=re.IGNORECASE)
+            if not match:
+                continue
+            signal = re.sub(r"\s+", " ", match.group("signal")).strip()
+            if re.fullmatch(QUARTER_PATTERN, signal, flags=re.IGNORECASE):
+                return signal.upper()
+            return signal
+        return None
+
     def _extract_schedule_signals(self, deal_package: DealPackage) -> List:
-        return [
-            chunk
-            for chunk in deal_package.chunks
-            if "commercial operation" in chunk.text.lower() or "commercial operations" in chunk.text.lower()
-        ]
+        return [chunk for chunk in deal_package.chunks if self._extract_schedule_signal(chunk.text)]
 
     def retrieve(self, deal_package: DealPackage, query: str, top_k: int = 3) -> List[EvidenceSpan]:
         ranked = sorted(
@@ -110,13 +130,20 @@ class AegisPipeline:
 
     def _field_target_close_date(self, deal_package: DealPackage) -> FieldResult:
         schedule_hits = self._extract_schedule_signals(deal_package)
-        normalized_signals = []
-        for chunk in schedule_hits:
-            text = chunk.text
-            date_match = re.search(r"(January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4}", text)
-            quarter_match = re.search(r"Q[1-4] \d{4}", text)
-            normalized_signals.append(date_match.group(0) if date_match else quarter_match.group(0) if quarter_match else text)
+        normalized_signals = [signal for chunk in schedule_hits if (signal := self._extract_schedule_signal(chunk.text))]
         unique_signals = list(dict.fromkeys(normalized_signals))
+        if not unique_signals:
+            return FieldResult(
+                field_id="target_close_date",
+                label="Target Close Date",
+                value="Commercial operation timing could not be established from the package.",
+                reasoning="The system found no grounded commercial operation timing signal in the source documents.",
+                support_label="not_mentioned",
+                verification_label="missing",
+                source_mode="deal_docs",
+                confidence=0.14,
+                evidence_spans=[],
+            )
         if len(unique_signals) > 1:
             value = "Conflicting schedule signals: " + " vs ".join(unique_signals) + "."
             reasoning = "The package contains multiple commercial operation timing signals across source documents, so the system keeps both and marks the schedule as unsure pending clarification."
