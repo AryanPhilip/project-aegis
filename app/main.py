@@ -13,7 +13,7 @@ from starlette.requests import Request
 from benchmark.seed import load_seed_deal_package
 from benchmark.schemas import DealPackage, PipelineResult
 from models.pipeline import AegisPipeline
-from app.viewmodels import build_portfolio_view
+from app.viewmodels import build_deal_workspace_view, build_portfolio_view
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SEED_PATH = BASE_DIR / "data" / "seed" / "deal_packages" / "luminapv_project_finance.json"
@@ -77,10 +77,12 @@ def create_app(seed_path: Optional[Path] = None) -> FastAPI:
             result = repo.result_for(deal_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="Deal not found") from exc
+        deal_package = repo.deals.get(deal_id)
+        workspace = build_deal_workspace_view(result, deal_package)
         return templates.TemplateResponse(
             request,
             "deal.html",
-            {"request": request, "result": result},
+            {"request": request, "result": result, "workspace": workspace},
         )
 
     @app.post("/ingest/deal-package")

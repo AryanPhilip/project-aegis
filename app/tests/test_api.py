@@ -91,6 +91,23 @@ def test_api_supports_ingest_pipeline_review_and_leaderboard():
     assert "Research" in dashboard_response.text
 
 
+def test_deal_dashboard_renders_workspace_sections_and_context_rail():
+    app = create_app()
+    client = TestClient(app)
+
+    deal_id = client.post("/ingest/deal-package").json()["deal_id"]
+    client.post("/run/pipeline", params={"deal_id": deal_id})
+
+    response = client.get(f"/deal/{deal_id}")
+
+    assert response.status_code == 200
+    assert "Deal Workspace" in response.text
+    assert "Evidence" in response.text
+    assert "Files" in response.text
+    assert "Research" in response.text
+    assert "Evals" in response.text
+
+
 def test_api_can_ingest_named_seed_cases():
     app = create_app()
     client = TestClient(app)

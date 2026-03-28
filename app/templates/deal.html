@@ -1,96 +1,201 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ result.deal_id }}</title>
-    <style>
-      body { font-family: Georgia, serif; margin: 2rem auto; max-width: 1100px; color: #111827; }
-      .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-      .card { border: 1px solid #d1d5db; border-radius: 14px; padding: 1rem 1.25rem; }
-      .pill { display: inline-block; border-radius: 999px; padding: 0.15rem 0.6rem; background: #ecfeff; color: #155e75; font-size: 0.85rem; }
-      li { margin-bottom: 0.5rem; }
-    </style>
-  </head>
-  <body>
-    <h1>{{ result.deal_id }}</h1>
-    <nav class="card" style="margin-bottom: 1rem;">
-      <strong>Workspace</strong>
-      <div style="margin-top: 0.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="#files">Files</a>
-        <a href="#schema">Schema</a>
-        <a href="#ask">Ask</a>
-        <a href="#ddqs">DDQs</a>
-        <a href="#memo">Memo</a>
-        <a href="#research">Research</a>
-        <a href="#evals">Evals</a>
+{% extends "base.html" %}
+
+{% block title %}{{ workspace.deal_id }} | Deal Workspace{% endblock %}
+
+{% block content %}
+  <section class="workspace-panel">
+    <div class="workspace-header">
+      <div>
+        <span class="eyebrow">Deal Workspace</span>
+        <h1 class="hero-title" style="font-size: clamp(2.2rem, 4vw, 3.8rem); margin-top: 12px;">{{ workspace.deal_id }}</h1>
+        <p class="hero-copy">
+          The workspace keeps structured fields, memo claims, DDQs, and supporting evidence in one surface so analysts can inspect trust state before moving a deal forward.
+        </p>
       </div>
-    </nav>
-    <div class="grid">
-      <section class="card" id="files">
-        <h2>Files</h2>
-        <ul>
-          {% for claim in result.memo_claims %}
-            {% for evidence in claim.evidence_spans %}
-              <li>{{ evidence.doc_title }} — page {{ evidence.page }}</li>
-            {% endfor %}
-          {% endfor %}
-        </ul>
-      </section>
-      <section class="card" id="schema">
-        <h2>Schema</h2>
-        <ul>
-          {% for key, field in result.schema.items() %}
-            <li>
-              <strong>{{ field.label }}</strong>
-              <span class="pill">{{ field.verification_label }}</span><br />
-              {{ field.value }}
-            </li>
-          {% endfor %}
-        </ul>
-      </section>
-      <section class="card" id="ask">
-        <h2>Ask</h2>
-        <p>Use the API `POST /deal/&lt;id&gt;/ask` to ask grounded diligence questions. Suggested prompts:</p>
-        <ul>
-          <li>Has the interconnection agreement been executed?</li>
-          <li>What is the minimum modeled DSCR and what supports it?</li>
-          <li>Is there a schedule inconsistency between the summary and EPC milestones?</li>
-        </ul>
-      </section>
-      <section class="card" id="memo">
-        <h2>Memo</h2>
-        <ul>
-          {% for claim in result.memo_claims %}
-            <li>{{ claim.sentence }} <span class="pill">{{ claim.verification_label }}</span></li>
-          {% endfor %}
-        </ul>
-      </section>
-      <section class="card" id="ddqs">
-        <h2>DDQs</h2>
-        <ul>
-          {% for item in result.ddqs %}
-            <li>{{ item.question }}</li>
-          {% endfor %}
-        </ul>
-      </section>
-      <section class="card" id="research">
-        <h2>Research</h2>
-        <ul>
-          {% for item in result.research_links %}
-            <li>{{ item.citation.title }} <span class="pill">{{ item.linked_risk }}</span></li>
-          {% endfor %}
-        </ul>
-      </section>
-      <section class="card" id="evals">
-        <h2>Eval Summary</h2>
-        <ul>
-          <li>Recall@3: {{ result.evals.summary.retrieval_recall_at_3 }}</li>
-          <li>Support macro F1: {{ result.evals.summary.support_macro_f1 }}</li>
-          <li>Unsupported claim rate: {{ result.evals.summary.unsupported_claim_rate }}</li>
-          <li>Abstention AUC: {{ result.evals.summary.abstention_auc }}</li>
-        </ul>
-      </section>
+      <div class="workspace-kpis">
+        <article class="workspace-kpi">
+          <p class="metric-label">Trust signal</p>
+          <p class="status-card-value">{{ workspace.summary.trust_signal }}</p>
+        </article>
+        <article class="workspace-kpi">
+          <p class="metric-label">Verification coverage</p>
+          <p class="status-card-value">{{ "%.0f"|format(workspace.summary.verification_coverage * 100) }}%</p>
+        </article>
+        <article class="workspace-kpi">
+          <p class="metric-label">Memo claims</p>
+          <p class="status-card-value">{{ workspace.summary.memo_claim_count }}</p>
+        </article>
+        <article class="workspace-kpi">
+          <p class="metric-label">Open DDQs</p>
+          <p class="status-card-value">{{ workspace.summary.ddq_count }}</p>
+        </article>
+      </div>
     </div>
-  </body>
-</html>
+
+    <div class="workspace-grid">
+      <main class="workspace-main">
+        <section class="panel" id="schema">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Schema</h2>
+              <p class="section-note">Grounded field extraction comes first so the rest of the workspace has a factual spine.</p>
+            </div>
+          </div>
+          {% for section in workspace.schema_sections %}
+            <div class="inline-grid">
+              {% for field in section.fields %}
+                <article class="artifact-item">
+                  <div class="artifact-topline">
+                    <div>
+                      <p class="metric-label">{{ field.label }}</p>
+                      <p class="artifact-value">{{ field.value }}</p>
+                    </div>
+                    <div class="artifact-meta">
+                      <span class="pill pill--{{ field.verification_label }}">{{ field.verification_label }}</span>
+                      <span class="pill pill--{{ field.support_label }}">{{ field.support_label }}</span>
+                    </div>
+                  </div>
+                  <p class="artifact-reasoning">{{ field.reasoning }}</p>
+                  {% if field.calc_trace %}
+                    <ol class="calc-trace">
+                      {% for step in field.calc_trace %}
+                        <li>{{ step }}</li>
+                      {% endfor %}
+                    </ol>
+                  {% endif %}
+                  <p class="muted">{{ field.evidence_count }} evidence references</p>
+                </article>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </section>
+
+        <section class="panel" id="memo">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Memo</h2>
+              <p class="section-note">Each memo sentence keeps its own trust and verification state.</p>
+            </div>
+          </div>
+          <div class="inline-grid">
+            {% for claim in workspace.memo_claims %}
+              <article class="artifact-item">
+                <div class="artifact-topline">
+                  <p class="artifact-sentence">{{ claim.sentence }}</p>
+                  <div class="artifact-meta">
+                    <span class="pill pill--{{ claim.verification_label }}">{{ claim.verification_label }}</span>
+                    <span class="pill pill--{{ claim.support_label }}">{{ claim.support_label }}</span>
+                  </div>
+                </div>
+                <p class="muted">{{ claim.evidence_count }} evidence references · {{ claim.claim_type }}</p>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="panel" id="ddqs">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">DDQs</h2>
+              <p class="section-note">Questions are ordered around unresolved evidence gaps and timing risks.</p>
+            </div>
+          </div>
+          <div class="inline-grid">
+            {% for item in workspace.ddqs %}
+              <article class="artifact-item">
+                <div class="artifact-topline">
+                  <div>
+                    <p class="artifact-question">{{ item.question }}</p>
+                    <p class="muted">{{ item.tag }} · Priority {{ item.priority }}</p>
+                  </div>
+                  <div class="artifact-meta">
+                    <span class="pill pill--{{ item.verification_label }}">{{ item.verification_label }}</span>
+                  </div>
+                </div>
+                <p class="artifact-reasoning">{{ item.rationale }}</p>
+                <p class="muted">{{ item.evidence_count }} linked evidence references</p>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="panel" id="ask">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Ask</h2>
+              <p class="section-note">Grounded queries should resolve to evidence-backed answers or abstain cleanly.</p>
+            </div>
+          </div>
+          <div class="ask-result">
+            <p class="muted">Interactive ask controls land in the next step. For now, use the API endpoint to query this deal.</p>
+          </div>
+        </section>
+      </main>
+
+      <aside class="rail-stack">
+        <section class="rail-panel">
+          <h2 class="rail-title">Evidence</h2>
+          <p class="rail-copy">Artifact-linked evidence will render here as analysts move through the workspace.</p>
+          <ul class="evidence-list">
+            {% for evidence in workspace.artifact_evidence.get("memo-001", []) %}
+              <li class="evidence-item">
+                <strong>{{ evidence.doc_title }}</strong><br />
+                <span class="muted">Page {{ evidence.page }} · {{ evidence.section }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="rail-panel">
+          <h2 class="rail-title">Files</h2>
+          {% if workspace.documents %}
+            <ul class="file-list">
+              {% for document in workspace.documents %}
+                <li class="file-item">
+                  <strong>{{ document.title }}</strong><br />
+                  <span class="muted">{{ document.document_type }} · {{ document.pages }} pages</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">No file metadata is available for this workspace.</p>
+          {% endif %}
+        </section>
+
+        <section class="rail-panel">
+          <h2 class="rail-title">Research</h2>
+          <ul class="rail-list">
+            {% for item in workspace.research_links %}
+              <li>
+                <strong>{{ item.title }}</strong><br />
+                <span class="muted">{{ item.linked_risk }} · {{ item.source }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="rail-panel">
+          <h2 class="rail-title">Evals</h2>
+          <ul class="rail-list">
+            <li>
+              <strong>Recall@3</strong><br />
+              <span class="muted">{{ workspace.eval_summary.retrieval_recall_at_3 }}</span>
+            </li>
+            <li>
+              <strong>Support macro F1</strong><br />
+              <span class="muted">{{ workspace.eval_summary.support_macro_f1 }}</span>
+            </li>
+            <li>
+              <strong>Unsupported claim rate</strong><br />
+              <span class="muted">{{ workspace.eval_summary.unsupported_claim_rate }}</span>
+            </li>
+            <li>
+              <strong>Abstention AUC</strong><br />
+              <span class="muted">{{ workspace.eval_summary.abstention_auc }}</span>
+            </li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+  </section>
+{% endblock %}
