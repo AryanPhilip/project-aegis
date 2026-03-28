@@ -19,6 +19,18 @@ def test_home_page_renders_command_center_for_loaded_deals():
     assert "Trust signal" in response.text
 
 
+def test_home_page_shows_pending_state_for_ingested_unrun_deals():
+    app = create_app()
+    client = TestClient(app)
+
+    client.post("/ingest/deal-package")
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "Pending run" in response.text
+    assert "Awaiting pipeline run" in response.text
+
+
 def test_api_supports_ingest_pipeline_review_and_leaderboard():
     app = create_app(seed_path=Path("data/seed/deal_packages/luminapv_project_finance.json"))
     client = TestClient(app)
@@ -120,6 +132,18 @@ def test_deal_dashboard_exposes_ask_and_review_hooks():
     assert 'data-review-control' in response.text
     assert 'data-artifact-id' in response.text
     assert 'data-evidence-panel' in response.text
+
+
+def test_deal_dashboard_starts_with_empty_evidence_panel():
+    app = create_app()
+    client = TestClient(app)
+
+    deal_id = client.post("/ingest/deal-package").json()["deal_id"]
+    client.post("/run/pipeline", params={"deal_id": deal_id})
+    response = client.get(f"/deal/{deal_id}")
+
+    assert response.status_code == 200
+    assert "Select a field, memo claim, or DDQ to load evidence here." in response.text
 
 
 def test_api_can_ingest_named_seed_cases():

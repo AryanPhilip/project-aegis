@@ -185,14 +185,9 @@
         <section class="rail-panel">
           <h2 class="rail-title">Evidence</h2>
           <p class="rail-copy">Artifact-linked evidence will render here as analysts move through the workspace.</p>
-          <ul class="evidence-list" data-evidence-panel>
-            {% for evidence in workspace.artifact_evidence.get("memo-001", []) %}
-              <li class="evidence-item">
-                <strong>{{ evidence.doc_title }}</strong><br />
-                <span class="muted">Page {{ evidence.page }} · {{ evidence.section }}</span>
-              </li>
-            {% endfor %}
-          </ul>
+          <div class="evidence-list" data-evidence-panel>
+            <p class="muted">Select a field, memo claim, or DDQ to load evidence here.</p>
+          </div>
         </section>
 
         <section class="rail-panel">

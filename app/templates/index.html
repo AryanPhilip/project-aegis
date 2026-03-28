@@ -76,6 +76,7 @@
             <th scope="col">Open DDQs</th>
             <th scope="col">Risk state</th>
             <th scope="col">Trust signal</th>
+            <th scope="col">Last updated</th>
           </tr>
         </thead>
         <tbody>
@@ -101,11 +102,12 @@
                 <td>{{ row.open_ddqs }}</td>
                 <td>{{ row.risk_state }}</td>
                 <td><span class="pill pill--{{ row.trust_signal|lower }}">{{ row.trust_signal }}</span></td>
+                <td>{{ row.last_updated }}</td>
               </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="7">No deals have been ingested yet. Use the ingestion endpoint to load a seed package into the command center.</td>
+              <td colspan="8">No deals have been ingested yet. Use the ingestion endpoint to load a seed package into the command center.</td>
             </tr>
           {% endif %}
         </tbody>
